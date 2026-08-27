@@ -107,7 +107,8 @@ export function PsiDial() {
               height={sy(0.5 - dCrit) - sy(0.5 + dCrit)} fill="#6b7a3a" opacity="0.13" />
             <line x1={PAD.l} y1={sy(0.5)} x2={W - PAD.r} y2={sy(0.5)}
               stroke="#6b7a3a" strokeWidth="1" strokeDasharray="2 3" />
-            <text x={W - PAD.r + 6} y={sy(0.5) + 3.5} className="lb" fill="#6b7a3a">
+            <text x={PAD.l + 6} y={sy(0.5 - dCrit) + 12} className="lb" fill="#6b7a3a"
+              stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">
               null 带 ±{dCrit.toFixed(4)}
             </text>
 
