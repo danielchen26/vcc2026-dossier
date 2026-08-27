@@ -1,9 +1,11 @@
 # VCC 2026 · 方法与验证工作簿
 
+**中文** · [English](README.en.md) · **[在线阅读 ↗](https://danielchen26.github.io/vcc2026-dossier/)**（左上角可切中英文）
+
 Arc Institute [Virtual Cell Challenge 2026](https://virtualcellchallenge.org/) 的方法工作簿。
 一个 React 单页应用，记录我们的解法、与全场传统做法的逐项对比，以及在**官方数据**上的全部验证记录。
 
-**核心论断：打分函数是闭式统计泛函，所以这题能在一台没有 GPU 的笔记本上解。**
+**核心论断：评分规则可以精确算出来，所以这题能在一台没有 GPU 的笔记本上解。**
 
 ```bash
 npm install

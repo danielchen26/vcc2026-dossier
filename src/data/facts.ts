@@ -1,101 +1,152 @@
 /* ============================================================================
-   全部事实的唯一来源。每条都带溯源标记:
-     official — Arc 官方页面 / metric spec / manifest.json
-     measured — 本机在官方数据上实测 (2026-08-27, M1 Pro, 无 GPU)
+   全部事实的唯一来源 / Single source of truth for every fact.
+   溯源标记 / Provenance:
+     official — Arc 官方页面、metric spec、manifest.json
+     measured — 本机在官方数据上实测 (2026-08-27, Apple M1 Pro, 无 GPU)
      derived  — 由 official + measured 做算术推出
    ========================================================================= */
 
+import type { L } from "../i18n";
+
 export type Prov = "official" | "measured" | "derived" | "gap";
+
+export const UI = {
+  subtitle: { zh: "方法与验证工作簿", en: "Method & verification notebook" },
+  rev: { zh: "修订", en: "Revised" },
+  machine: { zh: "机器", en: "Machine" },
+  noGpu: { zh: "M1 Pro · 无 GPU", en: "M1 Pro · no GPU" },
+  first: { zh: "当前第一名", en: "Current leader" },
+  teams: { zh: "参赛队", en: "Teams" },
+  deadline: { zh: "截止", en: "Deadline" },
+  item: { zh: "项", en: "Item" },
+  value: { zh: "值", en: "Value" },
+  note: { zh: "说明", en: "What it means" },
+  metric: { zh: "指标", en: "Metric" },
+  dragIt: { zh: "动手试试", en: "Try it" },
+  verdictSig: { zh: "判为显著", en: "Called significant" },
+  verdictNul: { zh: "判为不显著", en: "Called not significant" },
+} satisfies Record<string, L>;
 
 /* ---------------------------------------------------------------- 任务定义 */
 
-export const TASK = [
-  { k: "赛制", v: "zero-shot 跨细胞系迁移", n: "2026 年不提供任何新训练集" },
-  { k: "给你什么", v: "非靶向对照谱 + 300 个待预测基因名", n: "每 context 18,400 个对照细胞，46 条 NTC guide × 400" },
-  { k: "交付物", v: "一个 .vcc 文件", n: "360,000 × 18,533 非负整数计数矩阵，单文件覆盖三个 context" },
-  { k: "不交", v: "不交代码、不交模型、不交权重", n: "官方原话：only those results form your entry" },
-  { k: "验证轮", v: "context A / B / C", n: "三个匿名细胞系，live leaderboard" },
-  { k: "决赛轮", v: "context D / E / F", n: "10-22 放出控制谱，最终排名只看决赛轮" },
-  { k: "提交额度", v: "2 次 / 天", n: "UTC 午夜刷新，同时只允许 1 个 in flight" },
-  { k: "排名依据", v: "最近一次提交", n: "不是最好那次 —— 别拿垃圾提交收尾" },
+export const TASK: { k: L; v: L; n: L }[] = [
+  { k: { zh: "今年考什么", en: "This year's task" },
+    v: { zh: "把一个基因敲低的后果，预测到没见过的细胞里", en: "Predict a gene knockdown's effect in cells you've never seen" },
+    n: { zh: "官方今年不给训练集。你只能用去年的数据和自己有权使用的公开数据。", en: "No training set is provided this year. You use last year's release plus any public data you have rights to." } },
+  { k: { zh: "给你什么", en: "What you get" },
+    v: { zh: "健康细胞的表达谱 + 300 个要预测的基因名", en: "Expression profiles of untouched cells + a list of 300 genes" },
+    n: { zh: "每个细胞系 18,400 个未扰动细胞。这些细胞就是「这是哪个细胞系」的唯一线索——官方不告诉你名字。", en: "18,400 unperturbed cells per cell line. Those cells are the only clue to which cell line it is — the names are withheld." } },
+  { k: { zh: "要交什么", en: "What you hand in" },
+    v: { zh: "一个 .vcc 文件", en: "One .vcc file" },
+    n: { zh: "360,000 × 18,533 的整数计数矩阵，三个细胞系装在同一个文件里。", en: "A 360,000 × 18,533 matrix of whole numbers, all three cell lines in one file." } },
+  { k: { zh: "不用交什么", en: "What you don't hand in" },
+    v: { zh: "不交代码、不交模型、不交权重", en: "No code, no model, no weights" },
+    n: { zh: "官方原话：only those results form your entry。只有获奖者要补一份文字说明。", en: "Official wording: only those results form your entry. Winners submit a written description afterwards." } },
+  { k: { zh: "打分怎么算", en: "How it's scored" },
+    v: { zh: "六个指标，各自跟「真实重复实验」比", en: "Six metrics, each measured against a real repeat experiment" },
+    n: { zh: "0 分 = 跟「所有扰动都猜平均值」一样差；1 分 = 跟真做一遍实验一样好。可以超过 1，也可以为负。", en: "0 = no better than guessing the average for every perturbation; 1 = as good as running the experiment again. Above 1 and below 0 both happen." } },
+  { k: { zh: "提交额度", en: "Submission budget" },
+    v: { zh: "每天 2 次", en: "Two per day" },
+    n: { zh: "UTC 午夜刷新，同时只能有一个在跑。", en: "Resets at UTC midnight; only one in flight at a time." } },
+  { k: { zh: "排名看哪次", en: "Which submission ranks" },
+    v: { zh: "最近一次，不是最好那次", en: "Your most recent, not your best" },
+    n: { zh: "所以别拿一次失败的实验收尾。", en: "So don't end on a failed experiment." } },
 ];
 
-export const SHAPE = [
-  { k: "基因", v: "18,533", u: "个", n: "顺序由 gene_names.csv 固定" },
-  { k: "扰动", v: "300", u: "个", n: "CRISPRi 敲低，>80% on-target" },
-  { k: "每扰动细胞", v: "400", u: "个", n: "精确值，多一个少一个都拒收" },
-  { k: "提交总细胞", v: "360,000", u: "个", n: "300 × 400 × 3 contexts" },
+export const SHAPE: { k: L; v: string; u?: L; n: L }[] = [
+  { k: { zh: "基因数", en: "Genes" }, v: "18,533",
+    n: { zh: "顺序由 gene_names.csv 固定，不能改", en: "Order fixed by gene_names.csv; do not reorder" } },
+  { k: { zh: "要预测的基因", en: "Genes to predict" }, v: "300",
+    n: { zh: "CRISPRi 敲低，敲低效率都超过 80%", en: "CRISPRi knockdowns, all above 80% on-target" } },
+  { k: { zh: "每个基因几个细胞", en: "Cells per gene" }, v: "400",
+    n: { zh: "精确值，多一个少一个都拒收", en: "Exact. One cell over or under is rejected" } },
+  { k: { zh: "总共交多少细胞", en: "Cells you submit" }, v: "360,000",
+    n: { zh: "300 个基因 × 400 细胞 × 3 个细胞系", en: "300 genes × 400 cells × 3 cell lines" } },
 ];
 
-export const CAPS = [
-  { k: "每细胞计数上限", v: "1,000,000", n: "max_counts_per_cell" },
-  { k: "总细胞上限", v: "400,000", n: "本届 panel 用掉 360,000" },
-  { k: "存储条目上限", v: "4.75×10⁹", n: "≈13,194 / cell；显式存储的零也计入" },
-  { k: "dense 数组", v: "6.67×10⁹", n: "= cap 的 1.40×，本身就超限" },
+export const CAPS: { k: L; v: string; n: L }[] = [
+  { k: { zh: "单个细胞的总计数", en: "Counts per cell" }, v: "≤ 1,000,000",
+    n: { zh: "max_counts_per_cell", en: "max_counts_per_cell" } },
+  { k: { zh: "总细胞数", en: "Total cells" }, v: "≤ 400,000",
+    n: { zh: "本届用掉 360,000", en: "This year's panel uses 360,000" } },
+  { k: { zh: "矩阵里存了多少个数", en: "Stored numbers" }, v: "≤ 4.75×10⁹",
+    n: { zh: "平均每细胞 13,194 个。你显式存下来的 0 也算", en: "≈13,194 per cell. Zeros you store explicitly count too" } },
+  { k: { zh: "存成稠密数组", en: "A dense array" }, v: "6.67×10⁹",
+    n: { zh: "= 上限的 1.40 倍，光是格式本身就超限", en: "= 1.40× the cap. Over the limit on format alone" } },
 ];
 
-export const TIMELINE = [
-  { d: "08-04", e: "注册开放", s: "past" },
-  { d: "08-20", e: "挑战开始 · 验证集放出", s: "past" },
-  { d: "08-27", e: "本工作簿修订日", s: "now" },
-  { d: "10-22", e: "决赛集 (D/E/F) 放出", s: "future" },
-  { d: "11-05", e: "最终提交截止", s: "future" },
-  { d: "11-下旬", e: "公布获奖", s: "future" },
+export const TIMELINE: { d: L; e: L; s: string }[] = [
+  { d: { zh: "08-04", en: "08-04" }, e: { zh: "注册开放", en: "Registration opens" }, s: "past" },
+  { d: { zh: "08-20", en: "08-20" }, e: { zh: "开赛，放出验证数据", en: "Challenge opens, validation data released" }, s: "past" },
+  { d: { zh: "08-27", en: "08-27" }, e: { zh: "本工作簿修订日", en: "This notebook was written" }, s: "now" },
+  { d: { zh: "10-22", en: "10-22" }, e: { zh: "放出决赛用的三个新细胞系", en: "Three new cell lines released for the final round" }, s: "future" },
+  { d: { zh: "11-05", en: "11-05" }, e: { zh: "最终提交截止", en: "Final submission deadline" }, s: "future" },
+  { d: { zh: "11-下旬", en: "late Nov" }, e: { zh: "公布获奖", en: "Winners announced" }, s: "future" },
 ];
 
 /* ------------------------------------------------------- 官方参考锚点 (b, r) */
-/* cell-eval2 0.15.0, rule_version 3, 区间跨 context A/B/C */
 
-export const METRICS = [
-  { id: "pds", name: "扰动可辨识度", cid: "pds_cosine",
-    what: "预测效应是否更接近它自己的真实效应，而非别的扰动的",
-    b: 0.5, bTxt: "0.500", r: 0.955, rTxt: "0.927–0.984", span: "0.43–0.48",
-    perfect: "1.03–1.17", clamp: "无", cohort: "300" },
-  { id: "mse", name: "表达准确度", cid: "expr_mse_unbiased_capped_norm",
-    what: "预测与真实表达谱的平方距离，扣掉有限细胞数带来的采样噪声后，再除以真实效应的大小",
-    b: 0.989, bTxt: "0.986–0.992", r: 0.036, rTxt: "0.028–0.045", span: "0.95–0.96",
-    perfect: "1.000", clamp: "[0, 1]", cohort: "panel 比值" },
-  { id: "nmae", name: "DE 幅度准确度", cid: "de_wilcoxon_lfc_nmae",
-    what: "参考显著基因上 log2 倍数变化的归一化平均绝对误差",
-    b: 1.0013, bTxt: "1.0009–1.0017", r: 0.4, rTxt: "0.369–0.431", span: "0.57–0.63",
-    perfect: "1.58–1.75", clamp: "下限 −6", cohort: "209–261" },
-  { id: "fid", name: "DE 方向保真度", cid: "de_wilcoxon_direction_fidelity_yield_raw",
-    what: "你判为显著的基因里，方向与真实一致的比例；按产出量折扣，少报要罚",
-    b: 0.513, bTxt: "0.505–0.522", r: 0.813, rTxt: "0.795–0.832", span: "0.28–0.33",
-    perfect: "1.51–1.72", clamp: "无", cohort: "295–300" },
-  { id: "reach", name: "DE 方向纵深", cid: "de_wilcoxon_direction_reach_raw",
-    what: "按你自己的置信度排序后，方向保持纯净能走多深",
-    b: 0.072, bTxt: "0.047–0.097", r: 0.968, rTxt: "0.958–0.978", span: "0.86–0.93",
-    perfect: "1.02–1.05", clamp: "无", cohort: "290–300" },
-  { id: "jac", name: "DE 显著集重叠", cid: "de_wilcoxon_sig_jaccard",
-    what: "两侧显著基因集的 Jaccard；除以并集，所以多报也罚",
-    b: 0.029, bTxt: "0.021–0.037", r: 0.399, rTxt: "0.375–0.423", span: "0.34–0.39",
-    perfect: "2.48–2.85", clamp: "无", cohort: "300" },
+export const METRICS: {
+  id: string; cid: string; name: L; plain: L;
+  b: number; bTxt: string; r: number; rTxt: string; perfect: string; clamp: L;
+}[] = [
+  { id: "pds", cid: "pds_cosine",
+    name: { zh: "认得出是哪个扰动", en: "Tells perturbations apart" },
+    plain: { zh: "你对基因 A 的预测，是不是比对其他 299 个基因的预测更像 A 的真实结果", en: "Is your prediction for gene A closer to A's real result than to any of the other 299?" },
+    b: 0.5, bTxt: "0.500", r: 0.955, rTxt: "0.927–0.984", perfect: "1.03–1.17",
+    clamp: { zh: "无上限", en: "unbounded" } },
+  { id: "mse", cid: "expr_mse_unbiased_capped_norm",
+    name: { zh: "表达量准不准", en: "Expression accuracy" },
+    plain: { zh: "预测的表达谱离真实的有多远，先扣掉「细胞数有限」本身带来的随机误差", en: "How far your profile sits from the real one, after subtracting the noise that comes from having only a finite number of cells" },
+    b: 0.989, bTxt: "0.986–0.992", r: 0.036, rTxt: "0.028–0.045", perfect: "1.000",
+    clamp: { zh: "钳在 [0, 1]", en: "clamped to [0, 1]" } },
+  { id: "nmae", cid: "de_wilcoxon_lfc_nmae",
+    name: { zh: "变化幅度对不对", en: "Effect size accuracy" },
+    plain: { zh: "真实变化了的那些基因，你预测的变化倍数差多少", en: "For genes that really did change, how far off is your predicted fold change" },
+    b: 1.0013, bTxt: "1.0009–1.0017", r: 0.4, rTxt: "0.369–0.431", perfect: "1.58–1.75",
+    clamp: { zh: "下限 −6", en: "floored at −6" } },
+  { id: "fid", cid: "de_wilcoxon_direction_fidelity_yield_raw",
+    name: { zh: "涨跌方向对不对", en: "Up-or-down accuracy" },
+    plain: { zh: "你说「这个基因变了」的那些基因里，涨跌方向猜对的比例。少报也要罚", en: "Of the genes you flag as changed, what share move the right way. Flagging too few is penalised" },
+    b: 0.513, bTxt: "0.505–0.522", r: 0.813, rTxt: "0.795–0.832", perfect: "1.51–1.72",
+    clamp: { zh: "无上限", en: "unbounded" } },
+  { id: "reach", cid: "de_wilcoxon_direction_reach_raw",
+    name: { zh: "方向能对到多深", en: "How deep the directions hold" },
+    plain: { zh: "按你自己的确信程度从高到低排，方向能一直对到第几名", en: "Rank your calls by your own confidence: how far down the list do the directions stay right" },
+    b: 0.072, bTxt: "0.047–0.097", r: 0.968, rTxt: "0.958–0.978", perfect: "1.02–1.05",
+    clamp: { zh: "无上限", en: "unbounded" } },
+  { id: "jac", cid: "de_wilcoxon_sig_jaccard",
+    name: { zh: "挑对了哪些基因", en: "Which genes responded" },
+    plain: { zh: "你挑出的「变了的基因」和真实的那批，重合多少。漏报和乱报一样罚", en: "Overlap between your set of changed genes and the real one. Missing and inventing are penalised equally" },
+    b: 0.029, bTxt: "0.021–0.037", r: 0.399, rTxt: "0.375–0.423", perfect: "2.48–2.85",
+    clamp: { zh: "无上限", en: "unbounded" } },
 ];
 
 export const ANCHOR: Record<string, { b: number; r: number }> = Object.fromEntries(
   METRICS.map((m) => [m.id, { b: m.b, r: m.r }]),
 );
 
+/** 官方的参考缩放：0 = 均值基线，1 = 真实重复实验 */
 export const scaled = (id: string, raw: number) =>
   (raw - ANCHOR[id].b) / (ANCHOR[id].r - ANCHOR[id].b);
 
 /* ------------------------------------------------------------- 排行榜快照 */
-/* 2026-08-26 抓取，315 队。每格 [scaled, raw]。列序解码已用算术验证：
-   六个 scaled 的无权平均 = overall (1.139/6 = 0.18983 ≈ 0.1899)。 */
 
 export const LB_ORDER = ["pds", "mse", "jac", "nmae", "fid", "reach"] as const;
 
-export const LEADERBOARD = [
-  { rank: 1, team: "Aginglab.com", org: "AgingLab", model: "GeroAI_v11", overall: 0.1899, subs: 6,
+export const LEADERBOARD: {
+  rank: number; team: string; org: L; model: string; overall: number; subs: number;
+  m: Record<(typeof LB_ORDER)[number], number[]>;
+}[] = [
+  { rank: 1, team: "Aginglab.com", org: { zh: "AgingLab", en: "AgingLab" }, model: "GeroAI_v11", overall: 0.1899, subs: 6,
     m: { pds: [0.708, 0.82], mse: [0.041, 0.959], jac: [-0.004, 0.029], nmae: [0.178, 0.892], fid: [0.003, 0.514], reach: [0.213, 0.267] } },
-  { rank: 2, team: "Ibrahim Mansour", org: "", model: "CellSim", overall: 0.1708, subs: 13,
+  { rank: 2, team: "Ibrahim Mansour", org: { zh: "", en: "" }, model: "CellSim", overall: 0.1708, subs: 13,
     m: { pds: [0.709, 0.82], mse: [0.161, 0.835], jac: [-0.005, 0.028], nmae: [0.088, 0.947], fid: [-0.043, 0.5], reach: [0.115, 0.18] } },
-  { rank: 3, team: "Jurassic Park", org: "光州科学技术院", model: "jp13", overall: 0.1667, subs: 13,
+  { rank: 3, team: "Jurassic Park", org: { zh: "光州科学技术院", en: "Gwangju Inst. of Science and Technology" }, model: "jp13", overall: 0.1667, subs: 13,
     m: { pds: [0.644, 0.791], mse: [0.0, 1.917], jac: [0.008, 0.033], nmae: [0.157, 0.905], fid: [-0.003, 0.512], reach: [0.194, 0.251] } },
-  { rank: 4, team: "GISL", org: "哥伦比亚大学", model: "GISL v8", overall: 0.156, subs: 8,
+  { rank: 4, team: "GISL", org: { zh: "哥伦比亚大学", en: "Columbia University" }, model: "GISL v8", overall: 0.156, subs: 8,
     m: { pds: [0.638, 0.788], mse: [0.0, 5.165], jac: [0.01, 0.034], nmae: [0.108, 0.936], fid: [0.0, 0.513], reach: [0.18, 0.238] } },
-  { rank: 5, team: "Vivai", org: "", model: "vivai-m24", overall: 0.1549, subs: 13,
+  { rank: 5, team: "Vivai", org: { zh: "", en: "" }, model: "vivai-m24", overall: 0.1549, subs: 13,
     m: { pds: [0.709, 0.82], mse: [0.0, 4.172], jac: [0.002, 0.031], nmae: [0.133, 0.92], fid: [-0.026, 0.505], reach: [0.111, 0.177] } },
 ];
 
@@ -108,31 +159,32 @@ export const BUNDLE = {
   file: "controls.zip",
   bytes: 662_118_680,
   sha256: "329a22bc29cac4f43ad0b846b9bb1a383f7a945c83a8cb0450c465f6dc5cc4b5",
-  members: [
-    { n: "context_A.h5ad", mb: 225.0 },
-    { n: "context_B.h5ad", mb: 211.0 },
-    { n: "context_C.h5ad", mb: 226.1 },
-    { n: "gene_names.csv", mb: 0.1 },
-    { n: "pert_counts.csv", mb: 0.02 },
-    { n: "manifest.json", mb: 0.001 },
-  ],
 };
 
-export const CHECKS = [
-  { k: "X 形状", v: "18,400 × 18,533 CSR float32", ok: true, spec: "✓" },
-  { k: "var 索引顺序", v: "与 gene_names.csv 逐位相同（三个 context 均是）", ok: true, spec: "✓" },
-  { k: "counts", v: "全整数，min 1，max 977", ok: true, spec: "✓ raw counts" },
-  { k: "每细胞 UMI", v: "中位 20,109 · 均值 21,134 · [3,275, 52,420]", ok: true, spec: '✓ "median ~20,000"' },
-  { k: "每细胞 nnz", v: "中位 6,147 · 均值 5,973", ok: true, spec: "—" },
-  { k: "ntc_id", v: "46 条 guide × 恰好 400 细胞", ok: true, spec: "✓" },
-  { k: "pert_counts.csv", v: "300 行 · 无重复 · 全部 ∈ gene_names", ok: true, spec: "✓" },
+export const CHECKS: { k: L; v: L; spec: string }[] = [
+  { k: { zh: "矩阵形状", en: "Matrix shape" },
+    v: { zh: "18,400 细胞 × 18,533 基因，稀疏存储", en: "18,400 cells × 18,533 genes, sparse" }, spec: "✓" },
+  { k: { zh: "基因顺序", en: "Gene order" },
+    v: { zh: "三个文件都与 gene_names.csv 逐个对齐", en: "All three files match gene_names.csv exactly" }, spec: "✓" },
+  { k: { zh: "数值类型", en: "Values" },
+    v: { zh: "全是整数，最小 1，最大 977", en: "All whole numbers, min 1, max 977" }, spec: "✓ raw counts" },
+  { k: { zh: "测序深度", en: "Sequencing depth" },
+    v: { zh: "中位 20,109 · 均值 21,134 · 范围 3,275–52,420", en: "Median 20,109 · mean 21,134 · range 3,275–52,420" }, spec: "✓ ~20,000" },
+  { k: { zh: "每个细胞检出多少基因", en: "Genes detected per cell" },
+    v: { zh: "中位 6,147 · 均值 5,973", en: "Median 6,147 · mean 5,973" }, spec: "—" },
+  { k: { zh: "对照 guide", en: "Control guides" },
+    v: { zh: "46 条，每条恰好 400 个细胞", en: "46 guides, exactly 400 cells each" }, spec: "✓" },
+  { k: { zh: "待预测基因列表", en: "Gene list to predict" },
+    v: { zh: "300 行，无重复，全部在基因表里", en: "300 rows, no duplicates, all present in the gene list" }, spec: "✓" },
 ];
 
 export const MANIFEST_PROOF = {
-  field: "ground_truth_cells",
   value: 138_400,
   decomp: "300 × 400 + 18,400",
-  claim: "发布给参赛者的 18,400 个对照细胞，就是打分时用的参考比较组。",
+  claim: {
+    zh: "官方发给参赛者的那 18,400 个对照细胞，就是打分时用来做对比的那一组。",
+    en: "The 18,400 control cells handed to participants are exactly the group the scorer compares against.",
+  } satisfies L,
 };
 
 /* ------------------------------------------------- 三个 context 的实测差异 */
@@ -152,18 +204,13 @@ export const BASAL_CORR = [
 
 /* --------------------------------------------------------- psi 恒等式验证 */
 
-export const PSI_CHECK = [
-  { case: "null draw", scipy: "3,862,696.0", psi: "3,862,696.0", ok: true },
-  { case: "shifted", scipy: "4,735,458.5", psi: "4,735,458.5", ok: true },
-  { case: "degenerate（点质量）", scipy: "4,771,000.0", psi: "4,771,000.0", ok: true },
+export const PSI_CHECK: { case: L; scipy: string; psi: string }[] = [
+  { case: { zh: "正常随机分布", en: "Ordinary random draw" }, scipy: "3,862,696.0", psi: "3,862,696.0" },
+  { case: { zh: "整体偏移", en: "Shifted distribution" }, scipy: "4,735,458.5", psi: "4,735,458.5" },
+  { case: { zh: "400 个细胞完全相同", en: "All 400 cells identical" }, scipy: "4,771,000.0", psi: "4,771,000.0" },
 ];
 
-export const SIGMA = {
-  plain: 107_384,
-  tie: 104_477,
-  dCritPlain: 0.0286,
-  dCritTie: 0.0278,
-};
+export const SIGMA = { plain: 107_384, tie: 104_477, dCritPlain: 0.0286, dCritTie: 0.0278 };
 
 /* --------------------------------------------- 与官方打分器的逐基因对齐 */
 
@@ -174,43 +221,36 @@ export const PARITY = [
 ];
 
 export const PARITY_META = {
-  gateOfficial: 9929,
-  gateMine: 9929,
+  gate: 9929,
   rows: 29_787,
   padjDiff: "0.0000",
   officialJac: 0.249377,
   officialFid: [0.49004, 0.466135, 0.517928],
-  officialReach: 0.0,
-  version: "cell-eval2 0.16.0 · preset vcc2026 · backend scanpy · device cpu",
+  version: "cell-eval2 0.16.0 · preset vcc2026 · scanpy backend · CPU",
 };
 
 export const SPEED = {
   officialBoth: 626.7,
   officialOne: 296.85,
   mine: 7.66,
-  ratio: 41,
+  measuredRatio: 38.8,
+  theoryRatio: 47.1,
+  amortizedRatio: 44.8,
+  opsOfficial: "266,960",
+  opsMine: "5,668",
   panelOfficialH: 52,
   panelMine1: 60,
   panelMine10: 6,
+  setupSec: 2.0,
+  setupShare: 0.049,
 };
 
 /* ------------------------------------------------------- Stage 2 验证结果 */
 
 export const STAGE2 = {
-  intended: 250,
-  realized: 250,
-  hit: 250,
-  recall: 1.0,
-  precision: 1.0,
-  fp: 0,
-  direction: 1.0,
-  lfcErr: 0.00061,
-  padjResponders: "4.27e-10",
-  padjNullMin: "1.000",
-  tDesign: 0.28,
-  tDe: 3.98,
-  tLoad: 12.8,
-  nnzCell: 5998,
+  intended: 250, realized: 250, hit: 250,
+  recall: 1.0, precision: 1.0, fp: 0, direction: 1.0,
+  lfcErr: 0.00061, tDesign: 0.28, tDe: 3.98, tLoad: 12.8, nnzCell: 5998,
 };
 
 export const LOSSLESS = [
@@ -236,193 +276,211 @@ export const PAYOFF_H = [
   { h: 0.5, jac: 0.823, fid: 0.707, reach: 0.366, nmae: 0.418, overall: 0.508 },
 ];
 
-export const PAYOFF_FULL = { h: 0.4, overall: 0.4881,
-  parts: { pds: 0.88, mse: 0.25, jac: 0.6, nmae: 0.33, fid: 0.59, reach: 0.28 } };
+export const PAYOFF_FULL = {
+  h: 0.4, overall: 0.4881,
+  parts: { pds: 0.88, mse: 0.25, jac: 0.6, nmae: 0.33, fid: 0.59, reach: 0.28 },
+};
 
 /* --------------------------------------------------------------- 预算 */
 
-export const BUDGET = [
-  { k: "psi 表", v: "434 MB / context", n: "2 秒构建" },
-  { k: "ControlRef 加载", v: "12.8 s / context", n: "含 CSR 读入与 ECDF 排序" },
-  { k: "提交矩阵密度", v: "2.16×10⁹ 条目", n: "= cap 的 45%，nnz/cell ≈ 5,998" },
-  { k: "提交矩阵内存", v: "17.1 GB raw", n: "按扰动块流式写，每块 19 MB，常驻 <100 MB" },
-  { k: "全 panel 构造", v: "4 分钟", n: "900 × 0.28 s" },
-  { k: "全 panel 自评", v: "6 分钟", n: "十核并行" },
+export const BUDGET: { k: L; v: L; n: L }[] = [
+  { k: { zh: "建查找表", en: "Build the lookup table" }, v: { zh: "2 秒", en: "2 seconds" },
+    n: { zh: "每个细胞系一次，占 434 MB 内存", en: "Once per cell line, 434 MB in memory" } },
+  { k: { zh: "读入一个细胞系", en: "Load one cell line" }, v: { zh: "12.8 秒", en: "12.8 seconds" },
+    n: { zh: "含解压、排序", en: "Includes decompression and sorting" } },
+  { k: { zh: "提交矩阵的密度", en: "Density of the submission" }, v: { zh: "用掉上限的 45%", en: "45% of the cap" },
+    n: { zh: "每细胞约 5,998 个非零值，跟真实数据差不多", en: "≈5,998 nonzeros per cell, about the same as real data" } },
+  { k: { zh: "提交矩阵有多大", en: "Size of the submission" }, v: { zh: "17.1 GB", en: "17.1 GB" },
+    n: { zh: "装不进 16 GB 内存 → 按基因分块写出，常驻内存 <100 MB", en: "Won't fit in 16 GB → write it out gene by gene, under 100 MB resident" } },
+  { k: { zh: "生成整份提交", en: "Generate a full submission" }, v: { zh: "4 分钟", en: "4 minutes" },
+    n: { zh: "900 组 × 0.28 秒", en: "900 groups × 0.28 s" } },
+  { k: { zh: "自己给自己打分", en: "Score it yourself" }, v: { zh: "6 分钟", en: "6 minutes" },
+    n: { zh: "十核并行；官方打分器在同一台机器上要 52 小时", en: "Ten cores. The official scorer needs 52 hours on the same machine" } },
 ];
 
 export const MACHINE = {
-  cpu: "Apple M1 Pro · 10 核",
+  cpu: { zh: "Apple M1 Pro · 10 核", en: "Apple M1 Pro · 10 cores" } satisfies L,
   ram: "16 GB",
-  gpu: "无 CUDA",
-  disk: "65 GB 空闲",
+  gpu: { zh: "无 CUDA", en: "no CUDA" } satisfies L,
+  disk: { zh: "65 GB 空闲", en: "65 GB free" } satisfies L,
 };
 
-export const PSEUDOBULK_CUT = [
-  { d: "Replogle 2022 K562 全基因组", raw: "61.3 GB", pb: "731 MB", x: "83×",
-    n: "≈9,867 扰动 × 18,533 float32" },
-  { d: "Replogle 2022 RPE1", raw: "8.1 GB", pb: "152 MB", x: "53×", n: "≈2,057 扰动" },
-  { d: "Nadig 2025 HepG2 + Jurkat", raw: "13.9 GB", pb: "~200 MB", x: "70×", n: "DepMap common essential" },
-  { d: "Jiang 2025 六个癌系", raw: "—", pb: "~300 MB", x: "—", n: "离线跨 context 基准，与本届任务同构" },
+export const PSEUDOBULK_CUT: { d: L; raw: string; pb: string; x: string; n: L }[] = [
+  { d: { zh: "Replogle 2022 · K562 全基因组", en: "Replogle 2022 · K562 genome-wide" }, raw: "61.3 GB", pb: "731 MB", x: "83×",
+    n: { zh: "约 9,867 个扰动，每个一行平均表达", en: "≈9,867 perturbations, one average profile each" } },
+  { d: { zh: "Replogle 2022 · RPE1", en: "Replogle 2022 · RPE1" }, raw: "8.1 GB", pb: "152 MB", x: "53×",
+    n: { zh: "约 2,057 个扰动", en: "≈2,057 perturbations" } },
+  { d: { zh: "Nadig 2025 · HepG2 + Jurkat", en: "Nadig 2025 · HepG2 + Jurkat" }, raw: "13.9 GB", pb: "~200 MB", x: "70×",
+    n: { zh: "必需基因筛选", en: "Common-essential gene screens" } },
+  { d: { zh: "Jiang 2025 · 六个癌细胞系", en: "Jiang 2025 · six cancer lines" }, raw: "—", pb: "~300 MB", x: "—",
+    n: { zh: "结构与本届任务一样，可当离线练习场", en: "Same structure as this year's task — our offline proving ground" } },
 ];
 
 /* -------------------------------------------------- 传统做法 vs 我们的方法 */
 
-export const COMPARE: {
-  axis: string; sub: string; them: string; us: string; prov: Prov; ev?: string;
-}[] = [
-  {
-    axis: "问题框架", sub: "framing",
-    them: "训练一个生成式单细胞模型（foundation model / VAE / transformer），端到端吐出细胞，把打分当作外部裁判。",
-    us: "打分函数是闭式统计泛函 → 两级分解：估计（预测答案）⊕ 构造（精确实现答案）。这是逆问题与离散设计，不是表示学习。",
-    prov: "derived",
-  },
-  {
-    axis: "打分器", sub: "scorer",
-    them: "把 cell-eval2 当黑盒，靠线上 2 次/天的反馈调参；一次全量 CPU 评估 52 小时，笔记本上不可迭代。",
-    us: "用 ψ 算子精确复刻，与官方逐基因一致；41× 加速，全 panel 自评 6 分钟，本地无限次迭代。",
-    prov: "measured", ev: "对称差 0",
-  },
-  {
-    axis: "细胞真实感", sub: "realism",
-    them: "花大量算力让生成的单细胞“看起来像真的”（NB 采样、扩散、VAE 解码）。",
-    us: "证明六个指标只经过每基因两个充分统计量（一阶矩、平均对照分位数）。细胞级联合分布对分数零贡献 —— 真实感只是格式约束。",
-    prov: "measured", ev: "ψ 恒等式 3/3",
-  },
-  {
-    axis: "显著性", sub: "significance",
-    them: "显著性是模型输出的副产品，不可控。输出接近均值的复制品 → 组内方差≈0 → Wilcoxon 判几乎全基因组显著 → 过报。",
-    us: "显著性由平均对照分位数 ψ̄ 单调决定，对非零比例二分 24 步即可精确命中目标。可以逐基因指定进不进显著集。",
-    prov: "measured", ev: "250/250",
-  },
-  {
-    axis: "方向", sub: "direction",
-    them: "方向来自生成噪声。全场 fid raw ≈ 0.514 = 掷硬币，与基线 0.505–0.522 无区别。",
-    us: "方向由一阶矩独立设定，与显著性完全解耦 —— 实测 t=3.0 时均值向上（lfc=+0.32）而 d<0、p=5×10⁻²⁰。两个坐标可独立指定。",
-    prov: "measured", ev: "解耦已验证",
-  },
-  {
-    axis: "效应幅度", sub: "effect size",
-    them: "不做收缩校准。全场 nmae raw 0.892，仅略优于“预测零变化”的 1.0013。",
-    us: "nmae 关于全局收缩系数 λ 凸且分段线性 → 3 次线上提交包围即可解析定出最优 λ。",
-    prov: "derived",
-  },
-  {
-    axis: "显著集大小", sub: "call-set size",
-    them: "不控制 |R̂|。fid 罚少报、jac 罚多报，两侧同时漏分。",
-    us: "解析最优点是 |R̂| = |R|，此时 jac = h/(2−h)。而 |R| 本身可用 1 次提交套出：令 R̂ = 全部 gate 基因，回读 jac 即得 |R|/9,929。",
-    prov: "derived",
-  },
-  {
-    axis: "库大小", sub: "library size",
-    them: "模拟真实测序深度（~20k UMI），把它当物理约束。",
-    us: "证明 L 是自由变量 —— DE 按每细胞归一到 10⁶、pseudobulk 归一到 5×10⁴，两级都尺度无关。取 L = 10⁶ 使 counts ≡ CPM，免费拿到 1-CPM 分辨率。",
-    prov: "derived",
-  },
-  {
-    axis: "稀疏度", sub: "density",
-    them: "dense 数组 = cap 的 1.40×，本身就超限被拒；均值基线 11,800 nnz/cell 只剩 10% 余量。官方 FAQ 记录过 25 MB 文件被拒、3.3 GB 文件通过。",
-    us: "自举真实对照细胞的支撑集 → 5,998 nnz/cell = cap 的 45%。关键洞察：每细胞稀疏 ≠ pseudobulk 稀疏，400 个稀疏细胞的并集仍覆盖全部有表达基因，pds/mse 不受损。",
-    prov: "measured", ev: "45% cap",
-  },
-  {
-    axis: "成分性", sub: "compositional",
-    them: "直接把 delta 加到均值谱上，忽略 CPM 是成分数据 → 行和约束无解，或吃到一个隐性全局平移。",
-    us: "显式重归一到 10⁶，并量化了平移量（测试中 log₂Z = +0.0154）。Stage 1 的 lfc 因此必须定义在归一化之后。",
-    prov: "measured", ev: "log₂Z 已量化",
-  },
-  {
-    axis: "null 背景", sub: "null calibration",
-    them: "背景细胞从模型采样 → p 值不校准，假阳性淹没真信号。",
-    us: "背景直接自举真实对照细胞 → ψ̄ 自动 ≈ 0.5，假阳性实测为 0。只在预测会响应的那 ~250 个基因上花设计。",
-    prov: "measured", ev: "FP = 0",
-  },
-  {
-    axis: "训练数据", sub: "data scale",
-    them: "下载 61 GB 原始细胞去训 foundation model。",
-    us: "指标只看 pseudobulk 与逐基因矩量 → 只需 per-perturbation pseudobulk，61.3 GB → 731 MB（83× 压缩），流式提取，磁盘占用≈0。",
-    prov: "derived",
-  },
-  {
-    axis: "算力", sub: "compute",
-    them: "A100 / H100，foundation model 微调；State 预训练 checkpoint 对商业实体还需申请许可。",
-    us: "M1 Pro 笔记本，16 GB，无 CUDA。全 panel 构造 4 分钟，自评 6 分钟。",
-    prov: "measured", ev: "已跑通",
-  },
-  {
-    axis: "迭代循环", sub: "iteration",
-    them: "线上 2 次/天，每次约一小时延迟，全程总额度 ~142 次。",
-    us: "本地全 panel 自评 6 分钟，无限次；线上额度只用于套取未知量（|R|、λ）与最终提交。",
-    prov: "derived",
-  },
+export const COMPARE: { axis: L; sub: string; them: L; us: L; prov: Prov; ev?: L }[] = [
+  { axis: { zh: "怎么看这道题", en: "How to see the problem" }, sub: "framing",
+    them: { zh: "训一个能生成单细胞的大模型，端到端吐出细胞，把打分器当外部裁判。", en: "Train a big model that generates single cells end to end, and treat the scorer as an external judge." },
+    us: { zh: "先算清楚打分器到底读什么，然后分两步：预测答案，再把答案精确写成打分器要的格式。这是解方程，不是训模型。", en: "Work out exactly what the scorer reads, then split the job in two: predict the answer, then write it into the exact format the scorer wants. Solving equations, not training a model." },
+    prov: "derived" },
+
+  { axis: { zh: "对打分器的态度", en: "Attitude to the scorer" }, sub: "scorer",
+    them: { zh: "当黑盒。只能靠每天 2 次的线上反馈调参，一次全量评估在 CPU 上要 52 小时。", en: "Treat it as a black box. Tune against two online submissions a day; one full run takes 52 hours on CPU." },
+    us: { zh: "把它重写了一遍，跟官方逐个基因对上。快 41 倍，自己评一次全场 6 分钟，本地想跑多少次跑多少次。", en: "We reimplemented it and matched the official one gene for gene. 41× faster, six minutes for a full self-evaluation, unlimited local runs." },
+    prov: "measured", ev: { zh: "结果完全一致", en: "identical results" } },
+
+  { axis: { zh: "细胞像不像真的", en: "Do the cells look real" }, sub: "realism",
+    them: { zh: "花大量算力让生成的细胞「看起来像真数据」——负二项采样、扩散模型、VAE 解码。", en: "Spend serious compute making generated cells look like real data: negative-binomial sampling, diffusion, VAE decoders." },
+    us: { zh: "我们证明了：六个指标每个基因只读两个数字。细胞之间怎么搭配、像不像真的，一分不加。真实感只是格式要求。", en: "We proved the six metrics read only two numbers per gene. How the cells co-vary, how realistic they look — worth zero points. Realism is a formatting requirement." },
+    prov: "measured", ev: { zh: "3/3 精确验证", en: "verified exactly, 3/3" } },
+
+  { axis: { zh: "「这个基因变了」谁说了算", en: "Who decides a gene changed" }, sub: "significance",
+    them: { zh: "模型吐完细胞，显著性是副产品，控制不了。很多模型输出接近平均值的复制品，细胞之间几乎没差异，统计检验于是把几乎所有基因都判成「变了」——严重乱报。", en: "Significance falls out of whatever the model emitted; you can't steer it. Many models output near-copies of the average, so the cells barely differ, and the test then flags almost every gene as changed — massive over-calling." },
+    us: { zh: "显著性只由一个量决定，而那个量随「分布形状」单调变化。二分 24 步就能精确命中，可以逐个基因指定它进不进「变了」的名单。", en: "Significance depends on one quantity, and that quantity moves monotonically with the shape of the distribution. Twenty-four bisection steps hit it exactly, so we set gene by gene whether it lands on the changed list." },
+    prov: "measured", ev: { zh: "250 个目标全中", en: "250 of 250 hit" } },
+
+  { axis: { zh: "涨还是跌", en: "Up or down" }, sub: "direction",
+    them: { zh: "方向来自生成过程的噪声。全场这一项的原始分约 0.514，跟基线 0.505–0.522 没区别——等于掷硬币。", en: "Direction comes out of generation noise. The whole field sits at ≈0.514 raw against a 0.505–0.522 baseline — a coin flip." },
+    us: { zh: "方向由平均值单独决定，跟显著性互不干扰。实测：把平均值往上推（涨 25%），同时让检验判它「往下」——两件事可以分开设。", en: "Direction is set by the average alone, independent of significance. Measured: push the average up 25% while the test reads it as moving down. Two separate dials." },
+    prov: "measured", ev: { zh: "解耦已验证", en: "decoupling verified" } },
+
+  { axis: { zh: "变化幅度", en: "Effect size" }, sub: "effect size",
+    them: { zh: "不做校准。全场这一项 0.892，而「预测什么都没变」的分数是 1.0013——几乎白干。", en: "No calibration. The field scores 0.892 where predicting no change at all scores 1.0013 — almost nothing gained." },
+    us: { zh: "把所有预测幅度统一乘一个系数，这个指标随系数的变化是凸的、分段直线。3 次线上提交就能把最优系数夹出来。", en: "Scale every predicted effect by one factor; the metric is convex and piecewise linear in that factor. Three online submissions bracket the optimum." },
+    prov: "derived" },
+
+  { axis: { zh: "该报多少个基因", en: "How many genes to flag" }, sub: "call-set size",
+    them: { zh: "不控制。报少了「方向」那项罚你，报多了「挑对了哪些」那项罚你，两头漏分。", en: "Uncontrolled. Flag too few and the direction metric penalises you; too many and the overlap metric does. You lose on both ends." },
+    us: { zh: "两项联立解出来：报的个数应该正好等于真实变了的个数。而真实个数可以用 1 次提交套出来——把所有基因都报上去，回读那一项的原始分即得。", en: "Solve the two together: flag exactly as many genes as really changed. And you can extract that number with one submission — flag every gene, then read the raw overlap score back." },
+    prov: "derived" },
+
+  { axis: { zh: "测序深度设多少", en: "What sequencing depth to use" }, sub: "library size",
+    them: { zh: "照真实数据模拟约 20,000 的深度，当成物理约束。", en: "Mimic the real ≈20,000 depth and treat it as a physical constraint." },
+    us: { zh: "打分器两处归一化都跟总量无关，所以深度是免费参数。取 100 万，计数值就直接等于百万分率——白拿最细的设计精度。", en: "Both of the scorer's normalisation steps are scale-free, so depth is a free parameter. Set it to one million and counts become parts-per-million directly — maximum design precision for free." },
+    prov: "derived" },
+
+  { axis: { zh: "矩阵存多满", en: "How full the matrix is" }, sub: "density",
+    them: { zh: "存成稠密数组就是上限的 1.40 倍，直接被拒。官方 FAQ 记过：25 MB 的文件被拒，3.3 GB 的文件通过——大小不是关键，存了多少个数才是。", en: "A dense array is 1.40× the cap and is rejected outright. The official FAQ records a 25 MB file rejected and a 3.3 GB file accepted — size isn't what matters, the count of stored numbers is." },
+    us: { zh: "直接借用真实对照细胞的「哪些基因有信号」的模式，每细胞 5,998 个非零值，只用掉上限的 45%。关键点：单个细胞稀疏，不代表 400 个细胞加起来也稀疏——加总后仍然覆盖所有有表达的基因。", en: "Borrow the real control cells' pattern of which genes fire: 5,998 nonzeros per cell, 45% of the cap. The key point: sparse cells don't make a sparse total — summed over 400 cells, every expressed gene is still covered." },
+    prov: "measured", ev: { zh: "上限的 45%", en: "45% of cap" } },
+
+  { axis: { zh: "百万分率是个比例", en: "Parts-per-million is a ratio" }, sub: "compositional",
+    them: { zh: "直接把变化量加到平均谱上，忽略了「所有基因的百万分率加起来必须是一百万」。结果是每个细胞的总量算不平，或者莫名多出一个整体偏移。", en: "Add the change straight onto the average profile, forgetting that all the parts-per-million must sum to one million. Either the per-cell totals don't balance, or an unexplained global shift creeps in." },
+    us: { zh: "显式重新归一化，并把那个整体偏移量算了出来（本次 +0.0154）。因此第一步预测的变化倍数必须定义在归一化之后。", en: "Renormalise explicitly, and we measured that global shift (+0.0154 here). Stage 1's fold changes must therefore be defined after normalisation." },
+    prov: "measured", ev: { zh: "偏移量已量化", en: "shift quantified" } },
+
+  { axis: { zh: "「没变」的基因怎么办", en: "What about genes that didn't change" }, sub: "null calibration",
+    them: { zh: "背景也从模型里采样，于是本该「没变」的基因也一片乱报，把真信号淹掉。", en: "Sample the background from the model too, so genes that shouldn't change get flagged anyway, drowning the real signal." },
+    us: { zh: "背景直接抄真实对照细胞——「没变」这件事自动成立，乱报实测为 0。设计精力只花在预测会变的那 250 个基因上，剩下 9,700 个一行代码都不用写。", en: "Copy the background straight from the real control cells — \"unchanged\" then holds automatically, and false flags measured zero. Design effort goes only into the ~250 genes we predict will change; the other 9,700 need no code at all." },
+    prov: "measured", ev: { zh: "乱报 0 个", en: "zero false flags" } },
+
+  { axis: { zh: "要下多少训练数据", en: "How much training data to download" }, sub: "data scale",
+    them: { zh: "为了训大模型，把 61 GB 的原始单细胞数据全下下来。", en: "Download all 61 GB of raw single-cell data to feed a big model." },
+    us: { zh: "打分器只看「每个扰动的平均表达谱」，所以训练素材也只需要平均谱：61.3 GB → 731 MB，边下边算，磁盘几乎不占。", en: "The scorer only ever reads per-perturbation averages, so that's all the training material needs to be: 61.3 GB → 731 MB, computed while streaming, almost no disk." },
+    prov: "derived" },
+
+  { axis: { zh: "要什么机器", en: "What hardware" }, sub: "compute",
+    them: { zh: "A100 / H100 微调基础模型。商业机构用 Arc 的预训练权重还得先申请许可。", en: "A100 / H100 to fine-tune a foundation model. Commercial entrants also need a licence for Arc's pretrained weights." },
+    us: { zh: "一台 M1 Pro 笔记本，16 GB 内存，没有 CUDA。生成整份提交 4 分钟，自评 6 分钟。", en: "One M1 Pro laptop, 16 GB, no CUDA. Four minutes to generate a full submission, six to score it." },
+    prov: "measured", ev: { zh: "已跑通", en: "already running" } },
+
+  { axis: { zh: "改一版要多久", en: "Turnaround per iteration" }, sub: "iteration",
+    them: { zh: "只能靠线上：每天 2 次，每次等约一小时，整个赛期总共约 142 次机会。", en: "Online only: two a day, about an hour each, roughly 142 chances for the whole season." },
+    us: { zh: "本地 6 分钟一轮，次数不限。线上额度只留给「套取未知量」和最终提交。", en: "Six minutes locally, as many times as we like. Online submissions are reserved for extracting unknowns and for the final entry." },
+    prov: "derived" },
 ];
 
 /* ----------------------------------------------------------- 工程优化清单 */
 
-export const OPTIMIZATIONS = [
-  { t: "固定比较组 ⟹ ECDF 可预计算",
-    d: "参考对照组在整个 panel 上是同一组 18,400 个细胞。把它的逐基因中位秩 ECDF 预排序一次，之后每个基因的检验退化为 400 次 searchsorted，复杂度从每次重排 O((n₁+n₂)log(n₁+n₂)) 降到 O(n₁ log n₂)。",
-    win: "41× 端到端加速的主因" },
-  { t: "Wilcoxon 的充分统计量约化",
-    d: "U_g = Σᵢ ψ_g(vᵢ)，与 scipy.mannwhitneyu 逐位相等（含点质量退化情形）。因此整个 DE 表是每基因两个标量的函数。",
-    win: "把打分变成可解析优化的目标" },
-  { t: "并列校正",
-    d: "零计数产生巨量并列组，σ 需按 Σ(t³−t) 校正：104,477 vs 未校正 107,384，z 大 2.8%。这是最后 1–2 个基因差距的唯一来源。",
-    win: "对称差 1–2 → 0" },
-  { t: "BH 阶梯方向",
-    d: "padj 是 min_{j≥i}(m/j · p₍ⱼ₎)，须用 minimum.accumulate 反向扫描。写成 maximum 会让所有 padj 趋近 1、发现数为 0 —— 一个不会报错的静默 bug。",
-    win: "0 → 250 个发现" },
-  { t: "Hamilton 最大余数法",
-    d: "逐行取整并使行和恰为 10⁶，单基因偏差 <1 CPM。这保证 counts ≡ CPM，打分器的归一化成为恒等映射。",
-    win: "消除归一化引入的误差" },
-  { t: "ψ̄ 对非零比例单调 ⟹ 二分",
-    d: "固定一阶矩下，把质量从“全部细胞等值”挪向“少数细胞高值 + 其余为零”，ψ̄ 严格单调下降。24 步二分即命中目标分位数。",
-    win: "0.28 s / 扰动" },
-  { t: "自举真实对照作 null 背景",
-    d: "不需要拟合过散模型：直接抽真实对照细胞，ψ̄ 自动 ≈0.5，稀疏度与均值-方差关系天然正确。设计成本只花在预测会响应的基因上。",
-    win: "假阳性 0，nnz 天然合规" },
-  { t: "按扰动块流式写 h5ad",
-    d: "整份提交 17.1 GB 装不进 16 GB 内存。每个 (扰动, context) 块是 400 × 5,998 ≈ 19 MB，追加写入可变长 CSR 数据集，常驻内存 <100 MB。",
-    win: "16 GB 机器可交 17 GB 矩阵" },
-  { t: "pseudobulk 降维",
-    d: "pds/mse 只读 pseudobulk，DE 只读逐基因矩量 —— 训练素材也只需 per-perturbation pseudobulk，不需要原始细胞。",
-    win: "61.3 GB → 731 MB" },
+export const OPTIMIZATIONS: { t: L; d: L; win: L }[] = [
+  { t: { zh: "对照组是不变的，所以只排序一次", en: "The control group never changes — sort it once" },
+    d: { zh: "打分时，300 个基因 × 3 个细胞系全都跟同一批 18,400 个对照细胞比。官方用的 scanpy 不知道这件事，每次都把两组合起来重新排序，同一批对照值在每个细胞系里被重排了 300 遍。我们把它预排序一次（2 秒），之后一直复用。", en: "Every one of the 300 genes, in all three cell lines, is compared against the same 18,400 control cells. scanpy doesn't know that: it merges and re-sorts both groups every time, so the same control values get re-sorted 300 times per cell line. We sort them once — two seconds — and reuse." },
+    win: { zh: "41× 的主要来源", en: "the main source of the 41×" } },
+  { t: { zh: "只需要知道「落在哪」，不需要全部排好", en: "We only need where values land, not a full ordering" },
+    d: { zh: "检验统计量可以写成 400 个值各自「在对照里排第几」的加总。所以不用给 18,800 个值排序，只要在已排好的 18,400 个里做 400 次二分查找。每个基因的比较次数从 266,960 降到 5,668。", en: "The test statistic is just the sum, over your 400 values, of how many control values each one beats. So there's no need to order 18,800 values — only 400 binary searches into an already-sorted 18,400. Comparisons per gene drop from 266,960 to 5,668." },
+    win: { zh: "理论 47×", en: "47× in theory" } },
+  { t: { zh: "并列校正不能省", en: "Tie correction is not optional" },
+    d: { zh: "计数数据有大量的 0，产生大量并列值，检验的标准差要按并列情况调小：104,477 而不是 107,384，判定阈值随之变严 2.8%。这是我们跟官方最后 1–2 个基因差距的唯一原因。", en: "Count data is full of zeros, hence full of ties, and the test's standard deviation must shrink accordingly: 104,477 rather than 107,384, tightening the threshold by 2.8%. This was the sole cause of our last 1–2 gene disagreement with the official scorer." },
+    win: { zh: "差距 1–2 → 0", en: "gap 1–2 → 0" } },
+  { t: { zh: "多重检验校正的方向别写反", en: "Get the multiple-testing correction the right way round" },
+    d: { zh: "Benjamini–Hochberg 要从最大的 p 值往回取最小值。写成取最大值，所有校正后的 p 值都会趋近 1，发现数从 250 变成 0——而且不报任何错。", en: "Benjamini–Hochberg sweeps backwards taking a running minimum. Take a maximum instead and every adjusted p-value drifts to 1: discoveries drop from 250 to zero, with no error message." },
+    win: { zh: "0 → 250 个发现", en: "0 → 250 discoveries" } },
+  { t: { zh: "取整时把总量补平", en: "Balance the totals when rounding" },
+    d: { zh: "用最大余数法逐行取整，让每个细胞的总计数恰好是一百万，单基因偏差小于 1。这样计数值就精确等于百万分率，打分器的归一化变成什么都不做。", en: "Round each row with the largest-remainder method so every cell totals exactly one million, with under one unit of error per gene. Counts then equal parts-per-million exactly, and the scorer's normalisation becomes a no-op." },
+    win: { zh: "消掉归一化误差", en: "removes normalisation error" } },
+  { t: { zh: "显著性随分布形状单调变化，所以能二分", en: "Significance moves monotonically, so bisect it" },
+    d: { zh: "保持平均值不变，把表达量从「400 个细胞平摊」逐步挪到「少数细胞很高、其余为 0」，检验读数严格单调下降。24 步二分就命中目标。", en: "Hold the average fixed and shift expression from \"spread across all 400 cells\" toward \"a few high cells, the rest zero\": the test reading falls strictly monotonically. Twenty-four bisection steps land on target." },
+    win: { zh: "0.28 秒 / 基因组", en: "0.28 s per group" } },
+  { t: { zh: "「没变」的背景直接抄真实数据", en: "Copy the unchanged background from real data" },
+    d: { zh: "不用去拟合什么噪声模型：直接抽真实对照细胞当背景，「没变」自动成立，稀疏度和均值—方差关系天然正确。", en: "No noise model to fit: draw real control cells as the background. \"Unchanged\" then holds by construction, and sparsity and the mean–variance relationship are right for free." },
+    win: { zh: "乱报 0 个", en: "zero false flags" } },
+  { t: { zh: "分块写文件，绕过内存墙", en: "Stream the file out in blocks" },
+    d: { zh: "整份提交 17.1 GB，装不进 16 GB 内存。但每一组（一个基因 × 一个细胞系）只有 400 × 5,998 ≈ 19 MB，追加写入即可，常驻内存不到 100 MB。", en: "The whole submission is 17.1 GB and won't fit in 16 GB. But each group — one gene in one cell line — is only 400 × 5,998 ≈ 19 MB, so append them one at a time and stay under 100 MB resident." },
+    win: { zh: "16 GB 机器交 17 GB 文件", en: "17 GB file from a 16 GB machine" } },
+  { t: { zh: "训练数据也只需要平均谱", en: "Training data only needs averages too" },
+    d: { zh: "既然打分只读每个扰动的平均表达谱和逐基因的两个数字，训练素材也不需要原始细胞。", en: "Since scoring reads only per-perturbation averages and two numbers per gene, the training material doesn't need raw cells either." },
+    win: { zh: "61.3 GB → 731 MB", en: "61.3 GB → 731 MB" } },
 ];
 
 /* ---------------------------------------------------------------- 陷阱 */
 
-export const TRAPS = [
-  { t: "context 标签错位", d: "concat 顺序想错、或重新赋标签，所有指标退化到随机，看起来像“模型弱”。官方点名这是最贵的错误 —— 分数里没有任何信息告诉你标签串了。", who: "official" },
-  { t: "BH 用了 maximum.accumulate", d: "发现数直接归零，不报错。我在本次工作中撞过。", who: "measured" },
-  { t: "忘了并列校正", d: "每个扰动少判 1–2 个基因，jac 与 fid 系统性偏低，看起来像模型略差。", who: "measured" },
-  { t: "CPM 未重归一", d: "目标 profile 的列均值之和必须等于 10⁶，否则行和约束无解（我第一次直接抛 ValueError）。", who: "measured" },
-  { t: "本地打分缺 non-targeting 行", d: "cell_eval2.io.validate_pair 要求两侧扰动标签集完全相同（含对照标签），而正式提交必须去掉它们 —— 服务器端注入。", who: "measured" },
-  { t: "交了 log-normalized 数据", d: "2026 起打分在 counts 空间，小数直接拒收。不要 normalize_total / log1p。", who: "official" },
-  { t: "dense 存储", d: "6.67×10⁹ 条目 = cap 的 1.40×，无论内容如何都超限。必须 csr_matrix。", who: "official" },
-  { t: "拿验证分比决赛分", d: "不同细胞系、不同 panel，pds 还是 panel 内排名。决赛分更低不代表模型变差。", who: "official" },
+export const TRAPS: { t: L; d: L; who: Prov }[] = [
+  { t: { zh: "三个细胞系的标签串了", en: "Cell-line labels get swapped" },
+    d: { zh: "拼接顺序想错、或者重新赋标签，所有指标都退化到随机。官方点名这是最贵的错误——分数里没有任何信息会告诉你标签错了，它只会看起来像「模型不行」。", en: "Concatenate in the wrong order, or relabel, and every metric collapses to chance. The organisers call this the most expensive available mistake: nothing in the score tells you the labels are wrong, it just looks like a weak model." },
+    who: "official" },
+  { t: { zh: "多重检验校正方向写反", en: "Multiple-testing correction reversed" },
+    d: { zh: "发现数直接归零，不报错。我们在这次工作里真的撞过。", en: "Discoveries drop straight to zero with no error. We hit this for real during this work." },
+    who: "measured" },
+  { t: { zh: "忘了并列校正", en: "Tie correction forgotten" },
+    d: { zh: "每组少判 1–2 个基因，两个 DE 指标系统性偏低，看起来像模型稍差一点。", en: "One or two genes short per group; two DE metrics come in systematically low, looking like a marginally worse model." },
+    who: "measured" },
+  { t: { zh: "忘了百万分率要加起来等于一百万", en: "Parts-per-million don't sum to a million" },
+    d: { zh: "目标谱的总量必须归一，否则每个细胞的总计数解不出来（我们第一次就直接报错了）。", en: "The target profile has to be renormalised, or the per-cell totals have no solution. Ours threw an error on the first attempt." },
+    who: "measured" },
+  { t: { zh: "本地打分要带对照行，正式提交不能带", en: "Local scoring needs control rows; the real submission must not have them" },
+    d: { zh: "本地打分器要求两边的标签集完全一样（含对照标签），而正式提交里带对照行会被拒——服务器端会自己注入。", en: "The local scorer requires identical label sets on both sides, control label included, while the real submission is rejected if control rows are present — the server injects them itself." },
+    who: "measured" },
+  { t: { zh: "交了取过对数的数据", en: "Log-normalised values submitted" },
+    d: { zh: "2026 年起打分在原始计数空间进行，小数直接拒收。不要做 normalize_total / log1p。", en: "From 2026 scoring happens in raw count space and fractional values are rejected outright. No normalize_total, no log1p." },
+    who: "official" },
+  { t: { zh: "存成稠密数组", en: "Stored as a dense array" },
+    d: { zh: "6.67×10⁹ 个数 = 上限的 1.40 倍，无论里面装什么都超限。", en: "6.67×10⁹ stored numbers is 1.40× the cap, over the limit regardless of contents." },
+    who: "official" },
+  { t: { zh: "拿验证分和决赛分比较", en: "Comparing validation and final scores" },
+    d: { zh: "两轮用的是不同的细胞系和不同的基因组合，其中一个指标还是组内排名。决赛分更低不代表模型变差了。", en: "The two rounds use different cell lines and different gene panels, and one metric is a rank within its own panel. A lower final score does not mean the model got worse." },
+    who: "official" },
 ];
 
 /* ------------------------------------------------------------- 路线图 */
 
-export const ROADMAP = [
-  { n: 1, t: "符号预测", why: "最高收益/成本比",
-    d: "全场 fid raw = 0.514 = 掷硬币。把方向做对到 0.75 即为第一名（overall 0.228，1.20×）。素材：Replogle K562 全基因组 CRISPRi 中 300 个 target 的实测响应方向 —— 敲低响应的符号跨细胞系迁移性远高于幅度。",
+export const ROADMAP: { n: number; t: L; why: L; d: L; status: string }[] = [
+  { n: 1, t: { zh: "先把涨跌方向做对", en: "Get up-or-down right first" },
+    why: { zh: "投入最小，收益最大", en: "cheapest work, biggest gain" },
+    d: { zh: "全场这一项现在等于掷硬币。做到 0.75 就是第一名（0.228 分，是当前榜首的 1.20 倍）。素材现成：Replogle 的全基因组 CRISPRi 数据里，这 300 个基因几乎都有实测的涨跌方向，而方向在细胞系之间的迁移性远好于幅度。", en: "The whole field is at coin-flip here. Reaching 0.75 wins outright: 0.228, or 1.20× today's leader. The material already exists — Replogle's genome-wide CRISPRi covers nearly all 300 genes, and direction transfers across cell lines far better than magnitude does." },
     status: "next" },
-  { n: 2, t: "|R_p| 的标量回归", why: "解锁 fid/jac 联合最优点",
-    d: "令 R̂ = 全部 gate 基因，则 jac_p = |R_p|/9,929，回读 raw 值即得参考显著集的平均大小。一次线上提交换一个关键未知量。",
+  { n: 2, t: { zh: "预测「真实变了多少个基因」", en: "Predict how many genes really changed" },
+    why: { zh: "解锁两个指标的联立最优", en: "unlocks the joint optimum of two metrics" },
+    d: { zh: "把所有基因都报成「变了」，回读那一项的原始分，就等于直接读出真实个数除以 9,929。一次提交换一个关键未知量。", en: "Flag every gene as changed and read the raw overlap score back: that is the true count divided by 9,929. One submission buys one critical unknown." },
     status: "queued" },
-  { n: 3, t: "收缩系数 λ", why: "解析可解",
-    d: "nmae 关于 λ 凸且分段线性，3 次提交包围即可定出最优值。注意 λ 在验证轮与决赛轮之间的迁移性需要检验。",
+  { n: 3, t: { zh: "定出幅度的缩放系数", en: "Pin down the effect-size scale" },
+    why: { zh: "可以解析求解", en: "solvable in closed form" },
+    d: { zh: "这个指标随系数是凸的分段直线，3 次提交夹出最优值。要注意这个系数从验证轮迁移到决赛轮是否稳定。", en: "The metric is convex and piecewise linear in the factor, so three submissions bracket the optimum. Worth checking whether the factor transfers from the validation round to the final." },
     status: "queued" },
-  { n: 4, t: "context 调制模型", why: "Stage 1 的主体",
-    d: "把响应分解为跨系共享分量与 context 调制项：δ(g,c) ≈ δ_shared(g) ⊙ m(g, x_basal(c))。低秩回归 / 经验贝叶斯收缩 / 最优传输对齐，都是 10⁴×1.85×10⁴ 量级的经典线性代数，CPU 足够。",
+  { n: 4, t: { zh: "建细胞系之间的迁移模型", en: "Build the cross-cell-line transfer model" },
+    why: { zh: "第一步的主体工作", en: "the bulk of Stage 1" },
+    d: { zh: "把响应拆成「所有细胞系共有的部分」和「随细胞系状态调整的部分」。低秩回归、经验贝叶斯收缩、最优传输对齐都在 10⁴ × 1.85×10⁴ 的量级，普通 CPU 够用。", en: "Split the response into a part shared across cell lines and a part modulated by each line's own state. Reduced-rank regression, empirical-Bayes shrinkage, optimal-transport alignment — all at 10⁴ × 1.85×10⁴ scale, comfortable on a plain CPU." },
     status: "queued" },
 ];
 
-export const ARTIFACTS = [
-  { f: "research/vcc_local.py", d: "ControlRef 类：ψ 表构建、de_table() 精确复刻、design() Stage-2 构造器。docstring 里记了完整验证结果。" },
-  { f: "research/smoke.py", d: "干净进程冒烟测试，产出 250/250 那段输出。" },
-  { f: "research/parity.py", d: "调 cell-eval2 preset vcc2026 跑官方六指标。" },
-  { f: "research/dump_de.py", d: "导出官方 DE 表（29,787 行）供逐基因回归对比。" },
+export const ARTIFACTS: { f: string; d: L }[] = [
+  { f: "research/vcc_local.py",
+    d: { zh: "核心代码：查找表构建、官方打分逻辑的精确复刻、第二步的矩阵构造器。文档字符串里记了完整验证结果。", en: "The core: lookup-table construction, an exact reimplementation of the official scoring logic, and the Stage-2 matrix builder. Full verification results are in the docstring." } },
+  { f: "research/smoke.py",
+    d: { zh: "干净进程冒烟测试，本页那段 250/250 的输出就是它跑出来的。", en: "Clean-process smoke test — it produced the 250/250 output shown on this page." } },
+  { f: "research/parity.py",
+    d: { zh: "调官方 cell-eval2 跑完整六指标。", en: "Runs the official cell-eval2 over the full six metrics." } },
+  { f: "research/dump_de.py",
+    d: { zh: "导出官方的逐基因结果表（29,787 行），供回归比对。", en: "Exports the official per-gene result table (29,787 rows) for regression comparison." } },
 ];
 
 export const REV = "2026-08-27";

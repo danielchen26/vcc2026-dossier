@@ -507,3 +507,55 @@ main, section, .grid > *, .card, .stat, .chart, .dial, .tw, .cmp,
   .katex { font-size: 0.94em; }
   .hero h1 { max-width: none; }
 }
+
+/* ---------- 语言切换 ---------- */
+
+.langtog { display: flex; gap: 0; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; width: fit-content; }
+.langtog button {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 4px 11px;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.langtog button + button { border-left: 1px solid var(--rule); }
+.langtog button.on { background: var(--ink); color: var(--paper); }
+.langtog button:not(.on):hover { color: var(--pos); }
+.langtog button:focus-visible { outline: 2px solid var(--pos); outline-offset: -2px; }
+
+/* ---------- 「说人话」导语框 ---------- */
+
+.plain {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--stamp);
+  border-radius: 0 3px 3px 0;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.plain-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--stamp);
+  padding-top: 5px;
+  white-space: nowrap;
+}
+.plain > div { font-size: 16.5px; line-height: 1.58; }
+.plain > div > p { margin-bottom: 0.7em; }
+.plain > div > p:last-child { margin-bottom: 0; }
+.plain b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 620px) {
+  .plain { grid-template-columns: 1fr; gap: 8px; }
+  .plain-tag { padding-top: 0; }
+}
