@@ -559,3 +559,7 @@ main, section, .grid > *, .card, .stat, .chart, .dial, .tw, .cmp,
   .plain { grid-template-columns: 1fr; gap: 8px; }
   .plain-tag { padding-top: 0; }
 }
+
+/* 窄卡片里的数学块收一档，避免被裁 */
+.step .katex { font-size: 0.86em; }
+.step .mblock { padding: 10px 12px; margin: 12px 0; }

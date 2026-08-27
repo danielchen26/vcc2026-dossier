@@ -452,7 +452,7 @@ export const MATH = {
   design: String.raw`\operatorname{mean}_i v_i=\hat m_g,
     \qquad \sum_{i=1}^{400}\psi_g(v_i)=U_g^{\text{target}},
     \qquad v_i\in\mathbb{Z}_{\ge 0}`,
-  stage1: String.raw`(x^{\text{basal}}_c,\, g)\;\longmapsto\;(\hat R_{g,c},\;\widehat{\mathrm{lfc}}_{g,c},\;\text{rank})`,
+  stage1: String.raw`(x^{\text{basal}}_c,\, g)\;\mapsto\;(\hat R,\ \widehat{\mathrm{lfc}},\ \text{rank})`,
   scale: String.raw`s=(u-b)/(r-b)`,
   jacH: String.raw`\mathrm{jac}=h/(2-h)`,
 };

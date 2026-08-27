@@ -192,10 +192,12 @@ export function PsiDial() {
               { v: st.s, n: st.k, lab: c.high(st.k, st.s.toFixed(1)) },
             ].map((bar) => {
               const top = sy((bar.n / nPred) * 0.94);
+              // 标签始终在 psi 读数线上方至少 18px, 避免与它和 null 带标签重叠
+              const yLab = Math.max(PAD.t + 10, Math.min(top - 6, sy(0.5 + st.d) - 18));
               return (
                 <g key={bar.v}>
                   <rect x={sx(bar.v) - 5} y={top} width="10" height={sy(0) - top} fill="#b23a2b" opacity="0.82" />
-                  <text x={sx(bar.v) + 9} y={Math.max(PAD.t + 10, top - 6)} className="lb" fill="#b23a2b"
+                  <text x={sx(bar.v) + 9} y={yLab} className="lb" fill="#b23a2b"
                     stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{bar.lab}</text>
                 </g>
               );
