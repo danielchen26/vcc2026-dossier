@@ -147,14 +147,18 @@ export function PsiDial() {
             {[
               { v: 0, n: nPred - st.k, lab: `${nPred - st.k} 个零细胞` },
               { v: st.s, n: st.k, lab: `${st.k} 个细胞 @ ${st.s.toFixed(1)}` },
-            ].map((bar) => (
-              <g key={bar.v}>
-                <rect x={sx(bar.v) - 5} y={sy((bar.n / nPred) * 0.94)} width="10"
-                  height={sy(0) - sy((bar.n / nPred) * 0.94)} fill="#b23a2b" opacity="0.82" />
-                <text x={sx(bar.v) + 9} y={sy((bar.n / nPred) * 0.94) + 10}
-                  className="lb" fill="#b23a2b">{bar.lab}</text>
-              </g>
-            ))}
+            ].map((bar) => {
+              const top = sy((bar.n / nPred) * 0.94);
+              return (
+                <g key={bar.v}>
+                  <rect x={sx(bar.v) - 5} y={top} width="10"
+                    height={sy(0) - top} fill="#b23a2b" opacity="0.82" />
+                  <text x={sx(bar.v) + 9} y={Math.max(PAD.t + 10, top - 6)}
+                    className="lb" fill="#b23a2b"
+                    stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{bar.lab}</text>
+                </g>
+              );
+            })}
 
             {/* 达成的平均分位数 */}
             <line x1={PAD.l} y1={sy(0.5 + st.d)} x2={W - PAD.r} y2={sy(0.5 + st.d)}
