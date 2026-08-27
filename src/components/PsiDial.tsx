@@ -156,36 +156,36 @@ export function PsiDial() {
         <div className="dial-plot">
           <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`t=${t.toFixed(2)}, p=${pTxt}`}>
             <rect x={PAD.l} y={sy(0.5 + dCrit)} width={W - PAD.l - PAD.r}
-              height={sy(0.5 - dCrit) - sy(0.5 + dCrit)} fill="#6b7a3a" opacity="0.13" />
+              height={sy(0.5 - dCrit) - sy(0.5 + dCrit)} fill="#5fe3b0" opacity="0.13" />
             <line x1={PAD.l} y1={sy(0.5)} x2={W - PAD.r} y2={sy(0.5)}
-              stroke="#6b7a3a" strokeWidth="1" strokeDasharray="2 3" />
-            <text x={PAD.l + 6} y={sy(0.5 - dCrit) + 12} className="lb" fill="#6b7a3a"
-              stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{c.nullBand(dCrit.toFixed(4))}</text>
+              stroke="#5fe3b0" strokeWidth="1" strokeDasharray="2 3" />
+            <text x={PAD.l + 6} y={sy(0.5 - dCrit) + 12} className="lb" fill="#5fe3b0"
+              stroke="#151b29" strokeWidth="3.2" paintOrder="stroke">{c.nullBand(dCrit.toFixed(4))}</text>
 
-            <line x1={PAD.l} y1={sy(0)} x2={W - PAD.r} y2={sy(0)} stroke="#c7cdc1" />
-            <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={sy(0)} stroke="#c7cdc1" />
+            <line x1={PAD.l} y1={sy(0)} x2={W - PAD.r} y2={sy(0)} stroke="#ffffff2e" />
+            <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={sy(0)} stroke="#ffffff2e" />
             {[0, 0.25, 0.5, 0.75, 1].map((f) => (
               <g key={f}>
-                <line x1={PAD.l - 4} y1={sy(f)} x2={PAD.l} y2={sy(f)} stroke="#c7cdc1" />
+                <line x1={PAD.l - 4} y1={sy(f)} x2={PAD.l} y2={sy(f)} stroke="#ffffff2e" />
                 <text x={PAD.l - 8} y={sy(f) + 3.5} textAnchor="end" className="lb">{f.toFixed(2)}</text>
               </g>
             ))}
             {TICKS.map((v) => (
               <g key={v}>
-                <line x1={sx(v)} y1={sy(0)} x2={sx(v)} y2={sy(0) + 4} stroke="#c7cdc1" />
+                <line x1={sx(v)} y1={sy(0)} x2={sx(v)} y2={sy(0) + 4} stroke="#ffffff2e" />
                 <text x={sx(v)} y={sy(0) + 16} textAnchor="middle" className="lb">{v}</text>
               </g>
             ))}
             <text x={W - PAD.r} y={sy(0) + 31} textAnchor="end" className="lb">{c.axisX}</text>
 
-            <path d={ECDF_PATH} fill="none" stroke="#1b4f9c" strokeWidth="1.7" />
+            <path d={ECDF_PATH} fill="none" stroke="#4cc2ff" strokeWidth="1.7" />
             <text x={sx(ecdfQ[Math.floor(ecdfQ.length * 0.72)]) + 4} y={sy(0.92)}
-              className="lb" fill="#1b4f9c" stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{c.ecdf}</text>
+              className="lb" fill="#4cc2ff" stroke="#151b29" strokeWidth="3.2" paintOrder="stroke">{c.ecdf}</text>
 
             <line x1={sx(TARGET)} y1={PAD.t} x2={sx(TARGET)} y2={sy(0)}
-              stroke="#6b7a3a" strokeWidth="1.2" strokeDasharray="4 3" />
-            <text x={sx(TARGET) + 5} y={PAD.t + 10} className="lb" fill="#6b7a3a"
-              stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{c.pinned(`${TARGET.toFixed(2)} ppm`)}</text>
+              stroke="#5fe3b0" strokeWidth="1.2" strokeDasharray="4 3" />
+            <text x={sx(TARGET) + 5} y={PAD.t + 10} className="lb" fill="#5fe3b0"
+              stroke="#151b29" strokeWidth="3.2" paintOrder="stroke">{c.pinned(`${TARGET.toFixed(2)} ppm`)}</text>
 
             {[
               { v: 0, n: nPred - st.k, lab: c.zeros(nPred - st.k) },
@@ -196,19 +196,19 @@ export function PsiDial() {
               const yLab = Math.max(PAD.t + 10, Math.min(top - 6, sy(0.5 + st.d) - 18));
               return (
                 <g key={bar.v}>
-                  <rect x={sx(bar.v) - 5} y={top} width="10" height={sy(0) - top} fill="#b23a2b" opacity="0.82" />
-                  <text x={sx(bar.v) + 9} y={yLab} className="lb" fill="#b23a2b"
-                    stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{bar.lab}</text>
+                  <rect x={sx(bar.v) - 5} y={top} width="10" height={sy(0) - top} fill="#ff7a5c" opacity="0.82" />
+                  <text x={sx(bar.v) + 9} y={yLab} className="lb" fill="#ff7a5c"
+                    stroke="#151b29" strokeWidth="3.2" paintOrder="stroke">{bar.lab}</text>
                 </g>
               );
             })}
 
-            <line x1={PAD.l} y1={sy(0.5 + st.d)} x2={W - PAD.r} y2={sy(0.5 + st.d)} stroke="#b23a2b" strokeWidth="2" />
-            <circle cx={W - PAD.r} cy={sy(0.5 + st.d)} r="3.5" fill="#b23a2b" />
-            <text x={W - PAD.r + 6} y={sy(0.5 + st.d) - 5} textAnchor="end" className="lb" fill="#b23a2b"
-              stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{c.psiBar}</text>
-            <text x={W - PAD.r + 6} y={sy(0.5 + st.d) + 9} className="lb" fill="#b23a2b"
-              stroke="#fbfcfa" strokeWidth="3.2" paintOrder="stroke">{(0.5 + st.d).toFixed(4)}</text>
+            <line x1={PAD.l} y1={sy(0.5 + st.d)} x2={W - PAD.r} y2={sy(0.5 + st.d)} stroke="#ff7a5c" strokeWidth="2" />
+            <circle cx={W - PAD.r} cy={sy(0.5 + st.d)} r="3.5" fill="#ff7a5c" />
+            <text x={W - PAD.r + 6} y={sy(0.5 + st.d) - 5} textAnchor="end" className="lb" fill="#ff7a5c"
+              stroke="#151b29" strokeWidth="3.2" paintOrder="stroke">{c.psiBar}</text>
+            <text x={W - PAD.r + 6} y={sy(0.5 + st.d) + 9} className="lb" fill="#ff7a5c"
+              stroke="#151b29" strokeWidth="3.2" paintOrder="stroke">{(0.5 + st.d).toFixed(4)}</text>
           </svg>
         </div>
 
@@ -243,19 +243,19 @@ export function PsiDial() {
       <div className="dial-ctl" style={{ paddingTop: 0, flexDirection: "column", alignItems: "stretch", gap: 6 }}>
         <svg viewBox={`0 0 ${STRIP_W} ${STRIP_H}`} role="img" aria-label="p-value versus shape parameter">
           <line x1={50} y1={ty(Math.log10(0.05))} x2={STRIP_W - 92} y2={ty(Math.log10(0.05))}
-            stroke="#6b7a3a" strokeWidth="1" strokeDasharray="3 3" />
-          <text x={STRIP_W - 88} y={ty(Math.log10(0.05)) + 3.5} className="lb" fill="#6b7a3a">p = 0.05</text>
-          <line x1={50} y1={ty(0)} x2={STRIP_W - 92} y2={ty(0)} stroke="#c7cdc1" />
+            stroke="#5fe3b0" strokeWidth="1" strokeDasharray="3 3" />
+          <text x={STRIP_W - 88} y={ty(Math.log10(0.05)) + 3.5} className="lb" fill="#5fe3b0">p = 0.05</text>
+          <line x1={50} y1={ty(0)} x2={STRIP_W - 92} y2={ty(0)} stroke="#ffffff2e" />
           {[0, -10, -20, -30].map((lp) => (
             <text key={lp} x={44} y={ty(lp) + 3.5} textAnchor="end" className="lb">
               {lp === 0 ? "1" : `1e${lp}`}
             </text>
           ))}
-          <path d={LIVE_STRIP} fill="none" stroke="#1b4f9c" strokeWidth="1.6" />
+          <path d={LIVE_STRIP} fill="none" stroke="#4cc2ff" strokeWidth="1.6" />
           {dial.map((r) => (
-            <circle key={r.t} cx={tx(r.t)} cy={ty(Math.log10(r.p))} r="3" fill="#6b7a3a" stroke="#fbfcfa" strokeWidth="1" />
+            <circle key={r.t} cx={tx(r.t)} cy={ty(Math.log10(r.p))} r="3" fill="#5fe3b0" stroke="#151b29" strokeWidth="1" />
           ))}
-          <line x1={tx(t)} y1={8} x2={tx(t)} y2={STRIP_H - 20} stroke="#b23a2b" strokeWidth="1.5" />
+          <line x1={tx(t)} y1={8} x2={tx(t)} y2={STRIP_H - 20} stroke="#ff7a5c" strokeWidth="1.5" />
           {[0, 1, 2, 3].map((v) => (
             <text key={v} x={tx(v)} y={STRIP_H - 6} textAnchor="middle" className="lb">t={v}</text>
           ))}

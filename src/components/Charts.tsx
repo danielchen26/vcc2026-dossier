@@ -43,13 +43,13 @@ export function LeaderboardChart() {
   return (
     <figure className="chart" style={{ margin: 0 }}>
       <div className="legend">
-        <span><i style={{ background: "#b23a2b" }} />{c.legend[0]}</span>
-        <span><i style={{ background: "#1b4f9c" }} />{c.legend[1]}</span>
-        <span><i style={{ background: "#6b7a3a" }} />{c.legend[2]}</span>
+        <span><i style={{ background: "#ff7a5c" }} />{c.legend[0]}</span>
+        <span><i style={{ background: "#4cc2ff" }} />{c.legend[1]}</span>
+        <span><i style={{ background: "#5fe3b0" }} />{c.legend[2]}</span>
       </div>
       <svg viewBox={`0 0 ${LW} ${LH}`} role="img" aria-label="scores of the top five teams across six metrics">
-        <line x1={lx(0)} y1={LPAD.t - 12} x2={lx(0)} y2={LH - 14} stroke="#1b4f9c" strokeWidth="1.4" />
-        <line x1={lx(1)} y1={LPAD.t - 12} x2={lx(1)} y2={LH - 14} stroke="#6b7a3a" strokeWidth="1.4" />
+        <line x1={lx(0)} y1={LPAD.t - 12} x2={lx(0)} y2={LH - 14} stroke="#4cc2ff" strokeWidth="1.4" />
+        <line x1={lx(1)} y1={LPAD.t - 12} x2={lx(1)} y2={LH - 14} stroke="#5fe3b0" strokeWidth="1.4" />
         {[0, 0.25, 0.5, 0.75, 1].map((v) => (
           <text key={v} x={lx(v)} y={LPAD.t - 16} textAnchor="middle" className="lb">{v}</text>
         ))}
@@ -62,13 +62,13 @@ export function LeaderboardChart() {
             <g key={m.id}>
               <text x={LPAD.l - 10} y={y + 1} textAnchor="end" className="lb strong">{m.name[lang]}</text>
               <text x={LPAD.l - 10} y={y + 13} textAnchor="end" className="lb dim">{m.id}</text>
-              <line x1={lx(-0.15)} y1={y} x2={lx(1.1)} y2={y} stroke="#d8ddd3" />
-              <rect x={lx(lo)} y={y - 4} width={Math.max(lx(hi) - lx(lo), 1.5)} height="8" fill="#b23a2b" opacity="0.2" />
+              <line x1={lx(-0.15)} y1={y} x2={lx(1.1)} y2={y} stroke="#ffffff14" />
+              <rect x={lx(lo)} y={y - 4} width={Math.max(lx(hi) - lx(lo), 1.5)} height="8" fill="#ff7a5c" opacity="0.2" />
               {vals.map((v, k) => (
-                <circle key={k} cx={lx(v)} cy={y} r="3.6" fill="#b23a2b"
-                  opacity={k === 0 ? 1 : 0.5} stroke="#fbfcfa" strokeWidth="0.8" />
+                <circle key={k} cx={lx(v)} cy={y} r="3.6" fill="#ff7a5c"
+                  opacity={k === 0 ? 1 : 0.5} stroke="#151b29" strokeWidth="0.8" />
               ))}
-              <text x={lx(hi) + 9} y={y + 4} className="lb" fill="#b23a2b">{hi.toFixed(3)}</text>
+              <text x={lx(hi) + 9} y={y + 4} className="lb" fill="#ff7a5c">{hi.toFixed(3)}</text>
             </g>
           );
         })}
@@ -128,19 +128,19 @@ export function PayoffChart() {
   return (
     <figure className="chart" style={{ margin: 0 }}>
       <div className="legend">
-        <span><i style={{ background: "#b23a2b" }} />{c.legend[0]}</span>
-        <span><i style={{ background: "#1b4f9c" }} />{c.legend[1]}</span>
-        <span><i style={{ background: "#6b7a3a" }} />{c.legend[2]}</span>
+        <span><i style={{ background: "#ff7a5c" }} />{c.legend[0]}</span>
+        <span><i style={{ background: "#4cc2ff" }} />{c.legend[1]}</span>
+        <span><i style={{ background: "#5fe3b0" }} />{c.legend[2]}</span>
       </div>
       <svg viewBox={`0 0 ${PW} ${PH}`} role="img" aria-label="total score versus share of responders recovered">
         <line x1={PP.l} y1={py(TOP_OVERALL)} x2={PW - PP.r} y2={py(TOP_OVERALL)}
-          stroke="#6b7a3a" strokeWidth="1.5" strokeDasharray="5 3" />
-        <text x={PW - PP.r + 6} y={py(TOP_OVERALL) + 3.5} className="lb" fill="#6b7a3a">{c.leader}</text>
-        <line x1={PP.l} y1={py(0)} x2={PW - PP.r} y2={py(0)} stroke="#c7cdc1" />
-        <line x1={PP.l} y1={PP.t} x2={PP.l} y2={py(0)} stroke="#c7cdc1" />
+          stroke="#5fe3b0" strokeWidth="1.5" strokeDasharray="5 3" />
+        <text x={PW - PP.r + 6} y={py(TOP_OVERALL) + 3.5} className="lb" fill="#5fe3b0">{c.leader}</text>
+        <line x1={PP.l} y1={py(0)} x2={PW - PP.r} y2={py(0)} stroke="#ffffff2e" />
+        <line x1={PP.l} y1={PP.t} x2={PP.l} y2={py(0)} stroke="#ffffff2e" />
         {[0, 0.1, 0.2, 0.3, 0.4, 0.5].map((o) => (
           <g key={o}>
-            <line x1={PP.l - 4} y1={py(o)} x2={PP.l} y2={py(o)} stroke="#c7cdc1" />
+            <line x1={PP.l - 4} y1={py(o)} x2={PP.l} y2={py(o)} stroke="#ffffff2e" />
             <text x={PP.l - 8} y={py(o) + 3.5} textAnchor="end" className="lb">{o.toFixed(1)}</text>
           </g>
         ))}
@@ -152,18 +152,18 @@ export function PayoffChart() {
 
         {PAYOFF_SIGN.map((d) => (
           <g key={d.a}>
-            <circle cx={px(0.006)} cy={py(d.overall)} r="3.4" fill="#1b4f9c" />
-            <text x={px(0.006) + 8} y={py(d.overall) + 3.5} className="lb" fill="#1b4f9c">
+            <circle cx={px(0.006)} cy={py(d.overall)} r="3.4" fill="#4cc2ff" />
+            <text x={px(0.006) + 8} y={py(d.overall) + 3.5} className="lb" fill="#4cc2ff">
               {c.signLab(d.a, d.overall)}
             </text>
           </g>
         ))}
 
-        <path d={path} fill="none" stroke="#b23a2b" strokeWidth="2.2" />
+        <path d={path} fill="none" stroke="#ff7a5c" strokeWidth="2.2" />
         {PAYOFF_H.map((d) => (
           <g key={d.h}>
-            <circle cx={px(d.h)} cy={py(d.overall)} r="4" fill="#b23a2b" stroke="#fbfcfa" strokeWidth="1.2" />
-            <text x={px(d.h) + 9} y={py(d.overall) - 6} className="lb" fill="#b23a2b">{d.overall.toFixed(3)}</text>
+            <circle cx={px(d.h)} cy={py(d.overall)} r="4" fill="#ff7a5c" stroke="#151b29" strokeWidth="1.2" />
+            <text x={px(d.h) + 9} y={py(d.overall) - 6} className="lb" fill="#ff7a5c">{d.overall.toFixed(3)}</text>
           </g>
         ))}
       </svg>
